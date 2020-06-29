@@ -17,4 +17,4 @@ or `master-SNAPSHOT` for the latest commit.
 If you depend on a library that depends on mirror, then you do not have to `include` this library.
 
 ### using mirror
-For usage information, see the [wiki]().
+For usage information, see the [wiki](https://github.com/user11681/mirror/wiki).
