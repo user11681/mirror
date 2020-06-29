@@ -1,5 +1,5 @@
 # mirror [![](https://jitpack.io/v/user11681/mirror.svg)](https://jitpack.io/#user11681/mirror)
-a Java reflection library
+a Java reflection library, used mainly by my projects
 
 ### including with Gradle
 Add to `repositories {. . .}` in build.gradle
