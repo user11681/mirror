@@ -1,6 +1,5 @@
 package user11681.mirror;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -32,8 +31,7 @@ public class FieldWrapper<F> {
         this.setAccessible();
     }
 
-    @Nonnull
-    public F get() {
+    public final F get() {
         try {
             return (F) this.field.get(this.owner);
         } catch (final IllegalAccessException exception) {
@@ -41,19 +39,33 @@ public class FieldWrapper<F> {
         }
     }
 
-    public <T> T set(final Object value) {
+    public final F get(final Object owner) {
+        try {
+            return (F) this.field.get(owner);
+        } catch (final IllegalAccessException exception) {
+            throw new ReflectionException(exception);
+        }
+    }
+
+    public final void set(final Object value) {
         try {
             this.field.set(this.owner, value);
         } catch (final IllegalAccessException exception) {
             throw new ReflectionException(exception);
         }
-
-        return (T) this.owner;
     }
 
-    protected void setAccessible() {
+    public final void set(final Object owner, final Object value) {
+        try {
+            this.field.set(owner, value);
+        } catch (final IllegalAccessException exception) {
+            throw new ReflectionException(exception);
+        }
+    }
+
+    private void setAccessible() {
         if (this.owner == null) {
-            Fields.setField(this.field, "modifiers", this.field.getModifiers() & ~Modifier.FINAL);
+            Fields.setLowestField(this.field, "modifiers", this.field.getModifiers() & ~Modifier.FINAL);
         }
 
         this.field.setAccessible(true);

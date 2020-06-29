@@ -1,20 +1,18 @@
 package user11681.mirror;
 
-import java.lang.reflect.Field;
-
 public class Throwables {
-    private static final Field detailMessage = Fields.getDeclaredField(Throwable.class, "detailMessage");
+    private static final FieldWrapper<String> detailMessage = new FieldWrapper<>(Throwable.class, "detailMessage");
 
-    static {
-        detailMessage.setAccessible(true);
-    }
-
+    /**
+     * format the detail message of a {@linkplain Throwable throwable}
+     *
+     * @param throwable an instance of {@link Throwable}
+     * @param arguments the arguments to pass to {@link String#format} on the message of {@code throwable}
+     * @param <T>       the type of {@code throwable}
+     * @return {@code throwable}
+     */
     public static <T extends Throwable> T format(final T throwable, final Object... arguments) {
-        try {
-            detailMessage.set(throwable, String.format((String) detailMessage.get(throwable), arguments));
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
+        detailMessage.set(throwable, String.format(detailMessage.get(throwable), arguments));
 
         return throwable;
     }

@@ -1,13 +1,12 @@
 package user11681.mirror;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 import sun.reflect.ReflectionFactory;
+import user11681.mirror.handler.FieldHandler;
 
 @SuppressWarnings("unchecked")
 public class Fields {
@@ -27,21 +26,21 @@ public class Fields {
         addToArray(field, null, newElement);
     }
 
-    public static void addToArray(final Field field, final Object owner, Object newElement) {
+    public static void addToArray(final Field array, final Object owner, Object newElement) {
         try {
             final Field modifiers = Field.class.getDeclaredField("modifiers");
 
             modifiers.setAccessible(true);
-            modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            field.setAccessible(true);
+            modifiers.setInt(array, array.getModifiers() & ~Modifier.FINAL);
+            array.setAccessible(true);
 
-            final Object[] original = (Object[]) field.get(owner);
+            final Object[] original = (Object[]) array.get(owner);
             final int length = original.length;
             final Object[] newArray = Arrays.copyOf(original, length + 1);
 
             newArray[length] = newElement;
 
-            field.set(owner, newArray);
+            array.set(owner, newArray);
         } catch (final IllegalAccessException | NoSuchFieldException exception) {
             throw new ReflectionException(exception);
         }
@@ -79,24 +78,38 @@ public class Fields {
         }
     }
 
-    public static void setField(final Object object, final String name, final Object value) {
-        setField(object.getClass(), object, name, value);
+    public static void setLowestField(final Object owner, final String name, final Object value) {
+        setLowestField(owner.getClass(), owner, name, value);
+    }
+
+    public static void setLowestField(final Class<?> clazz, final String name, final Object value) {
+        setLowestField(clazz, null, name, value);
+    }
+
+    public static void setLowestField(final Class<?> clazz, final Object owner, final String name, final Object value) {
+        setField(clazz, owner, getLowestField(clazz, name), value);
+    }
+
+    public static void setField(final Object owner, final String name, final Object value) {
+        setField(owner.getClass(), owner, name, value);
     }
 
     public static void setField(final Class<?> clazz, final String name, final Object value) {
         setField(clazz, null, name, value);
     }
 
-    public static void setField(final Class<?> clazz, final Object object, final String name, final Object value) {
-        try {
-            final Field field = getLowestField(clazz, name);
+    public static void setField(final Class<?> clazz, final Object owner, final String name, final Object value) {
+        setField(clazz, owner, FieldHandler.getDeclaredField(clazz, name), value);
+    }
 
-            if (object == null) {
+    public static void setField(final Class<?> clazz, final Object owner, final Field field, final Object value) {
+        try {
+            if (owner == null) {
                 setField(field, "modifiers", field.getModifiers() & ~Modifier.FINAL);
             }
 
             field.setAccessible(true);
-            field.set(object, value);
+            field.set(owner, value);
             field.setAccessible(false);
         } catch (final IllegalAccessException exception) {
             throw new ReflectionException(exception);
@@ -114,16 +127,6 @@ public class Fields {
         return fields;
     }
 
-    public static Field makeAccessible(final Field field) {
-        final Field modifiers = getDeclaredField(Field.class, "modifiers");
-
-        field.setAccessible(true);
-        modifiers.setAccessible(true);
-        setInt(modifiers, field, field.getModifiers() & ~Modifier.FINAL);
-
-        return field;
-    }
-
     public static Field getLowestField(final Object object, final String name) {
         return getLowestField(object.getClass(), name);
     }
@@ -139,14 +142,6 @@ public class Fields {
             }
 
             return getLowestField(superclass, name);
-        }
-    }
-
-    public static Field getDeclaredField(final Class<?> clazz, final String name) {
-        try {
-            return clazz.getDeclaredField(name);
-        } catch (final NoSuchFieldException exception) {
-            throw new ReflectionException(exception);
         }
     }
 
@@ -199,97 +194,17 @@ public class Fields {
     @SuppressWarnings("JavadocReference")
     public static void addDeclaredField(Class<?> clazz, final Field field) {
         try {
-            final Method privateGetDeclaredFields = clazz.getDeclaredMethod("privateGetDeclaredFields", boolean.class);
-            final Method reflectionData = clazz.getDeclaredMethod("reflectionData");
-
-            privateGetDeclaredFields.setAccessible(true);
-            reflectionData.setAccessible(true);
-
-            final Field[] oldDeclaredFields = (Field[]) privateGetDeclaredFields.invoke(clazz, false);
-            final int length = oldDeclaredFields.length;
-            final Field[] newDeclaredFields = Arrays.copyOf(oldDeclaredFields, length + 1);
             final Class<?> ReflectionData = Classes.forName("java.lang.Class$ReflectionData");
-            final Field declaredFields = ReflectionData.getDeclaredField("declaredFields");
+            final Object reflectionData = new MethodWrapper<>("reflectionData", clazz);
 
-            declaredFields.setAccessible(true);
-            reflectionData.setAccessible(true);
+            addToArray(ReflectionData.getDeclaredField("declaredFields"), reflectionData, field);
 
-            newDeclaredFields[length] = field;
-            declaredFields.set(reflectionData.invoke(clazz), newDeclaredFields);
-        } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException exception) {
+            if (Modifier.isPublic(field.getModifiers())) {
+                addToArray(ReflectionData.getDeclaredField("publicFields"), reflectionData, field);
+            }
+        } catch (final NoSuchFieldException exception) {
             throw new ReflectionException(exception);
         }
     }
 
-    public static void set(final Field field, final Object object, final Object value) throws ReflectionException {
-        try {
-            field.set(object, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setBoolean(final Field field, final Object owner, final boolean value) throws ReflectionException {
-        try {
-            field.setBoolean(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setChar(final Field field, final Object owner, final char value) throws ReflectionException {
-        try {
-            field.setChar(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setByte(final Field field, final Object owner, final byte value) throws ReflectionException {
-        try {
-            field.setByte(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setShort(final Field field, final Object owner, final short value) throws ReflectionException {
-        try {
-            field.setShort(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setInt(final Field field, final Object owner, final int value) throws ReflectionException {
-        try {
-            field.setInt(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setLong(final Field field, final Object owner, final long value) throws ReflectionException {
-        try {
-            field.setLong(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setFloat(final Field field, final Object owner, final float value) throws ReflectionException {
-        try {
-            field.setFloat(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
-
-    public static void setDouble(final Field field, final Object owner, final double value) throws ReflectionException {
-        try {
-            field.setDouble(owner, value);
-        } catch (final IllegalAccessException exception) {
-            throw new ReflectionException(exception);
-        }
-    }
 }

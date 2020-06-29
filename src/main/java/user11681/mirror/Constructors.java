@@ -78,7 +78,7 @@ public class Constructors {
 
             return instance;
         } catch (final IllegalAccessException | NoSuchFieldException exception) {
-            throw new IllegalStateException("an error occurred while attempting to access an internal field of Class.", exception);
+            throw new ReflectionException(exception);
         }
     }
 
@@ -86,7 +86,7 @@ public class Constructors {
      * construct a new enum instance of type {@code T}.
      *
      * @param values               the T[] returned by {@code T#values()}.
-     * @param name                 the internal name of the new enum.
+     * @param name                 the internal name of the new enum used by {@link Enum#name}.
      * @param constructorArguments the arguments of the desired constructor declared in {@code T}.
      * @param <T>                  an enum.
      * @return a new instance of {@code T}.
@@ -206,7 +206,6 @@ public class Constructors {
         return addition.toArray(newFields);
     }
 */
-
     public static <C> Constructor<C> getConstructor(final Class<C> clazz, final Class<?>... parameterTypes) {
         try {
             return clazz.getDeclaredConstructor(parameterTypes);
