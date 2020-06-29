@@ -91,6 +91,7 @@ public class Constructors {
      * @param <T>                  an enum.
      * @return a new instance of {@code T}.
      */
+    @SuppressWarnings("JavadocReference")
     public static <T extends Enum<T>> T newEnumInstance(final T[] values, final String name, final Object... constructorArguments) {
         final int length = constructorArguments.length;
         final int originalLength = values.length;
@@ -121,9 +122,9 @@ public class Constructors {
             }
         }
 
-        throw new IllegalArgumentException(String.format("%s constructor with parameters of types %s was not found.", clazz.getName(),
+        throw Throwables.format(new IllegalArgumentException("%s constructor with parameters of types %s was not found."), clazz.getName(),
                 Arrays.toString(Arrays.stream(arguments).map(Object::getClass).toArray())
-        ));
+        );
     }
 
     /**

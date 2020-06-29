@@ -67,10 +67,11 @@ public class Fields {
     public static <T> T getFieldValue(final Object object, final Field field) {
         try {
             final T value;
+            final boolean accessible = field.isAccessible();
 
             field.setAccessible(true);
             value = (T) field.get(object);
-            field.setAccessible(false);
+            field.setAccessible(accessible);
 
             return value;
         } catch (final IllegalAccessException exception) {
@@ -170,7 +171,7 @@ public class Fields {
      */
     public static void addEnumField(final Enum<?> instance) {
         //noinspection ClassGetClass
-        addDeclaredField(instance.getClass().getClass(), newDeclaredEnumField(instance));
+        addDeclaredField(instance.getClass().getClass(), newEnumField(instance));
     }
 
     /**
@@ -179,7 +180,7 @@ public class Fields {
      * @param instance an enum instance.
      * @return a new {@linkplain Field field} belonging to the type of and holding {@code instance}.
      */
-    public static Field newDeclaredEnumField(final Enum<?> instance) {
+    public static Field newEnumField(final Enum<?> instance) {
         //noinspection ClassGetClass
         final Class<?> clazz = instance.getClass().getClass();
 
