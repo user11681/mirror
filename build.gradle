@@ -20,5 +20,5 @@ String jsr = "com.google.code.findbugs:jsr305:3.0.2"
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 
-    implementation "${jsr}"
+    compileOnly "${jsr}"
 }
