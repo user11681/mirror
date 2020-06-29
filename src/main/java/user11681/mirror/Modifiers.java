@@ -1,10 +1,17 @@
 package user11681.mirror;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-public class Modifiers {
+public class Modifiers extends Modifier {
     public static final int ENUM = 0x4000;
-    public static final int ENUM_FIELD = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL | ENUM;
+    public static final int ENUM_FIELD = PUBLIC | STATIC | FINAL | ENUM;
+
+    public static boolean isEnumArrayField(final Field field, final Class<?> enumClass) {
+        final int modifiers = field.getModifiers();
+
+        return field.isSynthetic() && field.getType().getComponentType() == enumClass && isPrivate(modifiers) && isStatic(modifiers) && isFinal(modifiers);
+    }
 
     public static boolean isEnum(final int modifiers) {
         return (modifiers & ENUM) != 0;

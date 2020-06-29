@@ -4,12 +4,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import sun.reflect.ConstructorAccessor;
+import user11681.mirror.accessor.FieldAccessor;
 
 @SuppressWarnings({"unchecked"})
 public class Constructors {
@@ -37,22 +38,19 @@ public class Constructors {
      */
     public static <T extends Enum<T>> T addEnumInstance(final T instance) {
         final Class<?> clazz = instance.getClass();
-        final Field field = Fields.getEnumArrayField(clazz);
+        final List<Field> enumArrayFields = Fields.getEnumArrayFields(clazz);
 
         try {
-            final Field modifierField = Field.class.getDeclaredField("modifiers");
-            final int modifiers = field.getModifiers();
+            for (final Field enumArrayField : enumArrayFields) {
+                FieldAccessor.makeAccessible(enumArrayField);
 
-            field.setAccessible(true);
-            modifierField.setAccessible(true);
-            modifierField.setInt(field, modifiers & ~Modifier.FINAL);
+                final T[] original = (T[]) enumArrayField.get(null);
+                final int length = original.length;
+                final T[] newValues = Arrays.copyOf(original, length + 1);
 
-            final T[] original = (T[]) field.get(null);
-            final int length = original.length;
-            final T[] newValues = Arrays.copyOf(original, length + 1);
-
-            newValues[length] = instance;
-            field.set(null, newValues);
+                newValues[length] = instance;
+                enumArrayField.set(null, newValues);
+            }
 
             final Field enumConstants = Class.class.getDeclaredField("enumConstants");
             final Field enumConstantDirectory = Class.class.getDeclaredField("enumConstantDirectory");
@@ -161,7 +159,7 @@ public class Constructors {
 
     /**
      * modify {@code clazz#getDeclaredFields0} to include the enum `{@linkplain Field fields} specified in ADDITIONS in the array returned thereby.
-     *
+     hotspot*
      * @param clazz the {@linkplain Class class} to which to add the enum {@linkplain Field fields}.
      *//*
 

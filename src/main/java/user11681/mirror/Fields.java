@@ -2,6 +2,7 @@ package user11681.mirror;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -154,11 +155,25 @@ public class Fields {
      */
     public static Field getEnumArrayField(final Class<?> enumClass) {
         for (final Field field : enumClass.getDeclaredFields()) {
-            final int modifiers = field.getModifiers();
-
-            if (field.isSynthetic() && field.getType().getComponentType() == enumClass && Modifier.isPrivate(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
+            if (Modifiers.isEnumArrayField(field, enumClass)) {
                 return field;
             }
+        }
+
+        throw new IllegalArgumentException(String.format("%s is not an enum class.", enumClass.getName()));
+    }
+
+    public static List<Field> getEnumArrayFields(final Class<?> enumClass) {
+        final List<Field> fields = new ArrayList<>();
+
+        for (final Field field : enumClass.getDeclaredFields()) {
+            if (Modifiers.isEnumArrayField(field, enumClass)) {
+                fields.add(field);
+            }
+        }
+
+        if (fields.size() > 0) {
+            return fields;
         }
 
         throw new IllegalArgumentException(String.format("%s is not an enum class.", enumClass.getName()));
