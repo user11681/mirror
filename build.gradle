@@ -13,6 +13,16 @@ repositories {
     maven {
         url "https://jitpack.io"
     }
+
+    maven {
+        url "https://repository.ow2.org/nexus/content/repositories/snapshots"
+    }
+}
+
+String asm = "org.ow2.asm:asm:9.0-SNAPSHOT"
+
+dependencies {
+    implementation "${asm}"
 }
 
 String jsr = "com.google.code.findbugs:jsr305:3.0.2"

@@ -1,13 +1,12 @@
-package user11681.mirror;
+package user11681.mirror.reflect;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.Nonnull;
 import sun.reflect.ReflectionFactory;
-import user11681.mirror.handler.FieldHandler;
+import user11681.mirror.reflect.handler.FieldHandler;
 
 @SuppressWarnings("unchecked")
 public class Fields {
@@ -29,10 +28,6 @@ public class Fields {
 
     public static void addToArray(final Field array, final Object owner, Object newElement) {
         try {
-            final Field modifiers = Field.class.getDeclaredField("modifiers");
-
-            modifiers.setAccessible(true);
-            modifiers.setInt(array, array.getModifiers() & ~Modifier.FINAL);
             array.setAccessible(true);
 
             final Object[] original = (Object[]) array.get(owner);
@@ -42,7 +37,7 @@ public class Fields {
             newArray[length] = newElement;
 
             array.set(owner, newArray);
-        } catch (final IllegalAccessException | NoSuchFieldException exception) {
+        } catch (final IllegalAccessException exception) {
             throw new ReflectionException(exception);
         }
     }
@@ -55,7 +50,6 @@ public class Fields {
         return getFieldValue(clazz, null, name);
     }
 
-    @Nonnull
     public static <U> U getFieldValue(final Class<?> clazz, final Object object, final String name) {
         return getFieldValue(object, getLowestField(clazz, name));
     }
@@ -64,17 +58,11 @@ public class Fields {
         return getFieldValue(null, field);
     }
 
-    @Nonnull
     public static <T> T getFieldValue(final Object object, final Field field) {
         try {
-            final T value;
-            final boolean accessible = field.isAccessible();
-
             field.setAccessible(true);
-            value = (T) field.get(object);
-            field.setAccessible(accessible);
 
-            return value;
+            return (T) field.get(object);
         } catch (final IllegalAccessException exception) {
             throw new ReflectionException(exception);
         }
@@ -133,18 +121,18 @@ public class Fields {
         return getLowestField(object.getClass(), name);
     }
 
-    public static Field getLowestField(final Class<?> clazz, final String name) {
-        try {
-            return clazz.getDeclaredField(name);
-        } catch (final NoSuchFieldException exception) {
-            final Class<?> superclass = clazz.getSuperclass();
+    public static Field getLowestField(final Class<?> original, final String name) {
+        Class<?> clazz = original;
 
-            if (superclass == null) {
-                throw new ReflectionException(exception);
+        while (clazz != null) {
+            try {
+                return clazz.getDeclaredField(name);
+            } catch (final NoSuchFieldException exception) {
+                clazz = clazz.getSuperclass();
             }
-
-            return getLowestField(superclass, name);
         }
+
+        throw Throwables.format(new ReflectionException("field %s was not found in %s or its superclasses."), original, name);
     }
 
     /**
@@ -203,23 +191,27 @@ public class Fields {
     }
 
     /**
-     * add {@linkplain Field field} to {@linkplain Class.ReflectionData#declaredFields declaredFields}.
+     * add {@code field} to {@linkplain Class.ReflectionData#declaredFields declaredFields}.
      *
      * @param field the {@linkplain Field field} to add.
      */
-    @SuppressWarnings("JavadocReference")
+    @SuppressWarnings({"JavadocReference", "ResultOfMethodCallIgnored"})
     public static void addDeclaredField(Class<?> clazz, final Field field) {
-        try {
-            final Class<?> ReflectionData = Classes.forName("java.lang.Class$ReflectionData");
-            final Object reflectionData = new MethodWrapper<>("reflectionData", clazz);
+        final Class<?> ReflectionData = Classes.forName("java.lang.Class$ReflectionData");
+        final Object reflectionData = new MethodWrapper<>("reflectionData", clazz).invoke();
 
-            addToArray(ReflectionData.getDeclaredField("declaredFields"), reflectionData, field);
+        if (getFieldValue(reflectionData, "declaredFields") == null) {
+            clazz.getDeclaredFields();
+        }
 
-            if (Modifier.isPublic(field.getModifiers())) {
-                addToArray(ReflectionData.getDeclaredField("publicFields"), reflectionData, field);
-            }
-        } catch (final NoSuchFieldException exception) {
-            throw new ReflectionException(exception);
+        if (getFieldValue(reflectionData, "publicFields") == null) {
+            clazz.getFields();
+        }
+
+        addToArray("declaredFields", reflectionData, field);
+
+        if (Modifier.isPublic(field.getModifiers())) {
+            addToArray("publicFields", reflectionData, field);
         }
     }
 

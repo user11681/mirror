@@ -1,11 +1,15 @@
-package user11681.mirror.accessor;
+package user11681.mirror.reflect.accessor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import user11681.mirror.ReflectionException;
-import user11681.mirror.handler.FieldHandler;
+import user11681.mirror.reflect.ReflectionException;
+import user11681.mirror.reflect.handler.FieldHandler;
 
 public class FieldAccessor {
+    public static <T> T get(final Class<?> clazz, final String field) {
+        return get(FieldHandler.getDeclaredField(clazz, field), null);
+    }
+
     public static <T> T get(final Field field, final Object owner) throws ReflectionException {
         makeAccessible(field);
 

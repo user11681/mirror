@@ -1,4 +1,4 @@
-package user11681.mirror;
+package user11681.mirror.reflect;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import sun.reflect.ConstructorAccessor;
-import user11681.mirror.accessor.FieldAccessor;
+import user11681.mirror.reflect.accessor.FieldAccessor;
 
 @SuppressWarnings({"unchecked"})
 public class Constructors {
@@ -19,14 +19,14 @@ public class Constructors {
     /**
      * construct a new enum instance and add it to the class represented by {@code T}.
      *
-     * @param values               the T[] returned by {@code T#values()}.
+     * @param clazz                the class of the enum represented by {@code T}.
      * @param name                 the internal name of the new enum that will be used in {@code T#valueOf(String)} and {@code Enum#valueOf(Class, String)} and in {@code T#name()}.
      * @param constructorArguments the arguments of the desired constructor declared in {@code T}.
      * @param <T>                  an enum.
-     * @return a new instance of {@code T}.
+     * @return a new instance of {@code clazz}.
      */
-    public static <T extends Enum<T>> T addEnumInstance(final T[] values, final String name, final Object... constructorArguments) {
-        return addEnumInstance(newEnumInstance(values, name, constructorArguments));
+    public static <T extends Enum<T>> T addEnumInstance(final Class<T> clazz, final String name, final Object... constructorArguments) {
+        return addEnumInstance(newEnumInstance(clazz, name, constructorArguments));
     }
 
     /**
@@ -83,14 +83,15 @@ public class Constructors {
     /**
      * construct a new enum instance of type {@code T}.
      *
-     * @param values               the T[] returned by {@code T#values()}.
+     * @param clazz                the class represented by {@code T}.
      * @param name                 the internal name of the new enum used by {@link Enum#name}.
      * @param constructorArguments the arguments of the desired constructor declared in {@code T}.
      * @param <T>                  an enum.
      * @return a new instance of {@code T}.
      */
     @SuppressWarnings("JavadocReference")
-    public static <T extends Enum<T>> T newEnumInstance(final T[] values, final String name, final Object... constructorArguments) {
+    public static <T extends Enum<T>> T newEnumInstance(final Class<T> clazz, final String name, final Object... constructorArguments) {
+        final T[] values = new MethodWrapper<T[]>(clazz, "values").invoke();
         final int length = constructorArguments.length;
         final int originalLength = values.length;
         final Object[] enumArguments = new Object[length + 2];
@@ -113,11 +114,9 @@ public class Constructors {
      */
     public static <T> T newInstance(final Class<T> clazz, final Object... arguments) {
         for (final Constructor<?> constructor : clazz.getDeclaredConstructors()) {
-            final T instance = newInstance(constructor, arguments);
-
-            if (instance != null) {
-                return instance;
-            }
+            try {
+                return newInstance(constructor, arguments);
+            } catch (final ReflectionException ignored) {}
         }
 
         throw Throwables.format(new IllegalArgumentException("%s constructor with parameters of types %s was not found."), clazz.getName(),
@@ -159,7 +158,8 @@ public class Constructors {
 
     /**
      * modify {@code clazz#getDeclaredFields0} to include the enum `{@linkplain Field fields} specified in ADDITIONS in the array returned thereby.
-     hotspot*
+     * hotspot*
+     *
      * @param clazz the {@linkplain Class class} to which to add the enum {@linkplain Field fields}.
      *//*
 

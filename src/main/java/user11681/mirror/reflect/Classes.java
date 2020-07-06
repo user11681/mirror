@@ -1,4 +1,4 @@
-package user11681.mirror;
+package user11681.mirror.reflect;
 
 public class Classes {
     public static Class<?> forNameNullable(final String name) {

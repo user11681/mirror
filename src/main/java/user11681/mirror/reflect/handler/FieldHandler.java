@@ -1,7 +1,7 @@
-package user11681.mirror.handler;
+package user11681.mirror.reflect.handler;
 
 import java.lang.reflect.Field;
-import user11681.mirror.ReflectionException;
+import user11681.mirror.reflect.ReflectionException;
 
 public class FieldHandler {
     public static Field getDeclaredField(final Class<?> clazz, final String name) throws ReflectionException {

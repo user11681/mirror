@@ -1,27 +1,48 @@
 package user11681.mirror;
 
 public enum TestEnum {
-    ONE(1, 1),
-    TWO(1, 2),
-    THREE(1);
+    ONE {
+        @Override
+        public int getNumber() {
+            return 0x1111;
+        }
+    },
+    TWO {
+        @Override
+        public int getNumber() {
+            return 0x2222;
+        }
+    },
+    THREE;
 
-    private final int number;
-    private final int squared;
-
-    TestEnum(final int number) {
-        this(number, number * number);
+    public int getNumber() {
+        return -23;
     }
 
-    TestEnum(final int number, final int squared) {
-        this.number = number;
-        this.squared = squared;
+    public int getSquared() {
+        this.getSquared(0, 0);
+
+        return this.getNumber() * this.getNumber();
     }
 
-    public final int getNumber() {
-        return this.number;
+    public int getSquared(final int thing, final int other) {
+        return 0;
     }
 
-    public final int getSquared() {
-        return this.squared;
+    public int getSquared(final Integer thing, final Integer other) {
+        return 0;
+    }
+
+    public enum Other {
+        OTHER {
+            @Override
+            public int other() {
+                return 675342;
+            }
+        };
+
+        public int other() {
+            return 0;
+        }
     }
 }

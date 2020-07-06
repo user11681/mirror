@@ -1,4 +1,4 @@
-package user11681.mirror;
+package user11681.mirror.reflect;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

@@ -1,4 +1,4 @@
-package user11681.mirror;
+package user11681.mirror.reflect;
 
 public class Throwables {
     private static final FieldWrapper<String> detailMessage = new FieldWrapper<>(Throwable.class, "detailMessage");
