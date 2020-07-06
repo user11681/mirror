@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import sun.reflect.ReflectionFactory;
+import user11681.mirror.reflect.accessor.FieldAccessor;
 import user11681.mirror.reflect.handler.FieldHandler;
 
 @SuppressWarnings("unchecked")
@@ -28,7 +29,7 @@ public class Fields {
 
     public static void addToArray(final Field array, final Object owner, Object newElement) {
         try {
-            array.setAccessible(true);
+            FieldAccessor.makeAccessible(array);
 
             final Object[] original = (Object[]) array.get(owner);
             final int length = original.length;
@@ -94,13 +95,9 @@ public class Fields {
 
     public static void setField(final Class<?> clazz, final Object owner, final Field field, final Object value) {
         try {
-            if (owner == null) {
-                setField(field, "modifiers", field.getModifiers() & ~Modifier.FINAL);
-            }
+            FieldAccessor.makeAccessible(field);
 
-            field.setAccessible(true);
             field.set(owner, value);
-            field.setAccessible(false);
         } catch (final IllegalAccessException exception) {
             throw new ReflectionException(exception);
         }
