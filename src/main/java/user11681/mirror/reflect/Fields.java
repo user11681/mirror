@@ -4,7 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 import sun.reflect.ReflectionFactory;
 import user11681.mirror.reflect.accessor.FieldAccessor;
 import user11681.mirror.reflect.handler.FieldHandler;
@@ -103,12 +105,13 @@ public class Fields {
         }
     }
 
-    public static List<Field> getAllFields(final Class<?> clazz) {
-        final List<Field> fields = Arrays.asList(clazz.getDeclaredFields());
-        final Class<?> superclass = clazz.getSuperclass();
+    public static List<Field> getAllFields(@Nonnull Class<?> clazz) {
+        final List<Field> fields = new ArrayList<>();
 
-        if (superclass != null) {
-            fields.addAll(getAllFields(superclass));
+        while (clazz != null) {
+            Collections.addAll(fields, clazz.getDeclaredFields());
+
+            clazz = clazz.getSuperclass();
         }
 
         return fields;
