@@ -1,4 +1,4 @@
-package user11681.mirror.asm;
+package user11681.mirror.asm.enumeration;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

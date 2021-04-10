@@ -1,3 +1,9 @@
+# DEPRECATED: replaced by [reflect](https://github.com/user11681/reflect).
+The code is broken; JitPack will be unable to build this project in its current state.
+
+
+
+
 # mirror [![](https://jitpack.io/v/user11681/mirror.svg)](https://jitpack.io/#user11681/mirror)
 a Java reflection library, used mainly by my projects
 

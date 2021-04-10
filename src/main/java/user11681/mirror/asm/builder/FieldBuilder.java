@@ -1,4 +1,6 @@
-package user11681.mirror.asm;
+package user11681.mirror.asm.builder;
+
+import org.objectweb.asm.FieldVisitor;
 
 public class FieldBuilder extends MemberBuilder<FieldBuilder> {
     protected final TypeBuilder builder;
@@ -15,7 +17,11 @@ public class FieldBuilder extends MemberBuilder<FieldBuilder> {
         return self;
     }
 
-    public TypeBuilder build() {
+    public TypeBuilder then() {
         return this.builder;
+    }
+
+    protected void build(final FieldVisitor visitor) {
+        visitor.visitEnd();
     }
 }

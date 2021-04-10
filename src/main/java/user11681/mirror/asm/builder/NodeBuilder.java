@@ -1,4 +1,4 @@
-package user11681.mirror.asm;
+package user11681.mirror.asm.builder;
 
 import org.objectweb.asm.Opcodes;
 

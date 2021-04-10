@@ -7,6 +7,8 @@ apply plugin: "maven"
 group 'user11681'
 version '0.0.0'
 
+sourceCompatibility = targetCompatibility = 1.8;
+
 repositories {
     mavenCentral()
 

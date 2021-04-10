@@ -1,4 +1,4 @@
-package user11681.mirror.asm;
+package user11681.mirror.asm.builder;
 
 public class InnerTypeBuilder extends NodeBuilder<InnerTypeBuilder> {
     protected final TypeBuilder parent;
